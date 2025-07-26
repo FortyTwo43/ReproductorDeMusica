@@ -9,6 +9,7 @@ import java.util.*;
 import javax.media.*;
 import javax.swing.*;
 import java.awt.Component;
+import java.io.File;
 
 /**
  *
@@ -31,6 +32,41 @@ public class NodoLista {
         return laLista;
     }
     
+
+    
+    /**
+     * Configura el selector de archivos con filtros para formatos de audio
+     */
+    private static JFileChooser configurarSelectorArchivos() {
+        JFileChooser selectorArchivos = new JFileChooser();
+        selectorArchivos.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        
+        // Crear filtro para archivos de audio
+        javax.swing.filechooser.FileFilter filtroAudio = new javax.swing.filechooser.FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                if (f.isDirectory()) return true;
+                return UtilidadesAudio.esFormatoSoportado(f.getName());
+            }
+            
+            @Override
+            public String getDescription() {
+                return "Archivos de Audio (*.mp3, *.wav, *.au, *.aiff, *.m4a, *.ogg)";
+            }
+        };
+        
+        selectorArchivos.setFileFilter(filtroAudio);
+        selectorArchivos.setAcceptAllFileFilterUsed(false);
+        
+        // Establecer directorio inicial
+        File directorioInicial = new File("C:\\");
+        if (directorioInicial.exists()) {
+            selectorArchivos.setCurrentDirectory(directorioInicial);
+        }
+        
+        return selectorArchivos;
+    }
+    
     public static LinkedList insercionCabecera(LinkedList lista)//OK
        {
            if (lista==null)
@@ -40,11 +76,24 @@ public class NodoLista {
            }
            
            // muestra el cuadro de diálogo de archivos, para que el usuario pueda elegir el archivo a abrir
-           JFileChooser selectorArchivos = new JFileChooser("C:\\wav\\");
-           selectorArchivos.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-           selectorArchivos.showOpenDialog(selectorArchivos);
-           lista.addFirst(cambiarRutaFormatoJMF(selectorArchivos.getSelectedFile().getAbsolutePath()));
-           JOptionPane.showMessageDialog(null, "Elemento agregado con éxito");
+           JFileChooser selectorArchivos = configurarSelectorArchivos();
+           int resultado = selectorArchivos.showOpenDialog(null);
+           
+           if (resultado == JFileChooser.APPROVE_OPTION) {
+               File archivoSeleccionado = selectorArchivos.getSelectedFile();
+               
+               // Validación completa del archivo
+               UtilidadesAudio.ValidacionResultado validacion = UtilidadesAudio.validarArchivoAudio(archivoSeleccionado);
+               
+               if (validacion.esValido) {
+                   String rutaFormateada = cambiarRutaFormatoJMF(archivoSeleccionado.getAbsolutePath());
+                   lista.addFirst(rutaFormateada);
+                   UtilidadesAudio.mostrarExitoValidacion(archivoSeleccionado.getName());
+               } else {
+                   UtilidadesAudio.mostrarErrorValidacion("Error de Validación", validacion.mensaje);
+               }
+           }
+           
            return lista;
            
        }
@@ -58,11 +107,27 @@ public class NodoLista {
            }
            
            // muestra el cuadro de diálogo de archivos, para que el usuario pueda elegir el archivo a abrir
-           JFileChooser selectorArchivos = new JFileChooser("C:\\wav\\");
-           selectorArchivos.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-           selectorArchivos.showOpenDialog(selectorArchivos);
-           lista.addLast(cambiarRutaFormatoJMF(selectorArchivos.getSelectedFile().getAbsolutePath()));
-           JOptionPane.showMessageDialog(null, "Elemento agregado con éxito");
+           JFileChooser selectorArchivos = configurarSelectorArchivos();
+           int resultado = selectorArchivos.showOpenDialog(null);
+           
+           if (resultado == JFileChooser.APPROVE_OPTION) {
+               File archivoSeleccionado = selectorArchivos.getSelectedFile();
+               
+                               if (archivoSeleccionado != null && archivoSeleccionado.exists()) {
+                    if (UtilidadesAudio.esFormatoSoportado(archivoSeleccionado.getName())) {
+                        String rutaFormateada = cambiarRutaFormatoJMF(archivoSeleccionado.getAbsolutePath());
+                        lista.addLast(rutaFormateada);
+                        JOptionPane.showMessageDialog(null, "Elemento agregado con éxito: " + archivoSeleccionado.getName());
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Formato no soportado. Use archivos MP3, WAV, AU, AIFF, M4A o OGG.", 
+                                                     "Error de formato", JOptionPane.ERROR_MESSAGE);
+                    }
+               } else {
+                   JOptionPane.showMessageDialog(null, "No se seleccionó ningún archivo válido.", 
+                                                "Error", JOptionPane.ERROR_MESSAGE);
+               }
+           }
+           
            return lista;
            
        }
@@ -75,17 +140,46 @@ public class NodoLista {
                return lista;
            }
            
-           Integer eleccion=Integer.parseInt(JOptionPane.showInputDialog
+           Integer eleccion;
+           try {
+               eleccion = Integer.parseInt(JOptionPane.showInputDialog
                         ("Número de elementos en la lista: "+lista.size()+"\n"+
                                     "¿En que posición desea introducir?"));
+           } catch (NumberFormatException e) {
+               JOptionPane.showMessageDialog(null, "Por favor ingrese un número válido.", 
+                                            "Error", JOptionPane.ERROR_MESSAGE);
+               return lista;
+           }
+           
+           if (eleccion < 1 || eleccion > lista.size() + 1) {
+               JOptionPane.showMessageDialog(null, "Posición inválida. Debe estar entre 1 y " + (lista.size() + 1), 
+                                            "Error", JOptionPane.ERROR_MESSAGE);
+               return lista;
+           }
 
            
            // muestra el cuadro de diálogo de archivos, para que el usuario pueda elegir el archivo a abrir
-           JFileChooser selectorArchivos = new JFileChooser("C:\\wav\\");
-           selectorArchivos.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-           selectorArchivos.showOpenDialog(selectorArchivos);
-           lista.add(eleccion-1,cambiarRutaFormatoJMF(selectorArchivos.getSelectedFile().getAbsolutePath()));
-           JOptionPane.showMessageDialog(null, "Elemento agregado con éxito");
+           JFileChooser selectorArchivos = configurarSelectorArchivos();
+           int resultado = selectorArchivos.showOpenDialog(null);
+           
+           if (resultado == JFileChooser.APPROVE_OPTION) {
+               File archivoSeleccionado = selectorArchivos.getSelectedFile();
+               
+                               if (archivoSeleccionado != null && archivoSeleccionado.exists()) {
+                    if (UtilidadesAudio.esFormatoSoportado(archivoSeleccionado.getName())) {
+                        String rutaFormateada = cambiarRutaFormatoJMF(archivoSeleccionado.getAbsolutePath());
+                        lista.add(eleccion-1, rutaFormateada);
+                        JOptionPane.showMessageDialog(null, "Elemento agregado con éxito: " + archivoSeleccionado.getName());
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Formato no soportado. Use archivos MP3, WAV, AU, AIFF, M4A o OGG.", 
+                                                     "Error de formato", JOptionPane.ERROR_MESSAGE);
+                    }
+               } else {
+                   JOptionPane.showMessageDialog(null, "No se seleccionó ningún archivo válido.", 
+                                                "Error", JOptionPane.ERROR_MESSAGE);
+               }
+           }
+           
            return lista;
            
        }
@@ -102,41 +196,59 @@ public class NodoLista {
     
     public static Player reproducirLista(JFrame ventana,Player reproductor,LinkedList lista)
     {
-        if (lista==null)
-          JOptionPane.showMessageDialog(null,"Hey...se debe crear primero la lista..");
-        else{
-            JOptionPane.showMessageDialog(null, "Número de elementos en la lista: "
-                                        +lista.size());
-            Integer eleccion=Integer.parseInt(JOptionPane.showInputDialog("¿Cuál desea reproducir?"));
-            try{
-                if(reproductor!=null)
-                reproductor.stop();
-                reproductor=Manager.createRealizedPlayer
-                        (new URL(lista.get(eleccion-1).toString()));
-               
-                
-                /*Component controles=reproductor.getControlPanelComponent();
-                if(controles!=null){
-                    ventana.remove(controles);
-                    //ventana.
-                    ventana.add(controles);
-                    controles.setLocation(10, 195);
-                    controles.setSize(320,25);
-                }*/
-            
-            reproductor.start();
-  
-                
-            }catch(Exception e){
-                   
-                System.out.println("Error al abrir archivo");
-                //return reproductor;
-            }
-            
+        if (lista==null) {
+            JOptionPane.showMessageDialog(null,"Hey...se debe crear primero la lista..");
+            return reproductor;
         }
         
-      return reproductor;    
-    }     
+        if (lista.isEmpty()) {
+            JOptionPane.showMessageDialog(null,"La lista está vacía. Agregue archivos primero.");
+            return reproductor;
+        }
+        
+        JOptionPane.showMessageDialog(null, "Número de elementos en la lista: " + lista.size());
+        
+        Integer eleccion;
+        try {
+            eleccion = Integer.parseInt(JOptionPane.showInputDialog("¿Cuál desea reproducir? (1-" + lista.size() + ")"));
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Por favor ingrese un número válido.", 
+                                         "Error", JOptionPane.ERROR_MESSAGE);
+            return reproductor;
+        }
+        
+        if (eleccion < 1 || eleccion > lista.size()) {
+            JOptionPane.showMessageDialog(null, "Posición inválida. Debe estar entre 1 y " + lista.size(), 
+                                         "Error", JOptionPane.ERROR_MESSAGE);
+            return reproductor;
+        }
+        
+        try{
+            if(reproductor!=null) {
+                reproductor.stop();
+                reproductor.close();
+            }
+            
+            String rutaArchivo = lista.get(eleccion-1).toString();
+            reproductor = Manager.createRealizedPlayer(new URL(rutaArchivo));
+            
+            // Mostrar información del archivo que se está reproduciendo
+            String nombreArchivo = UtilidadesAudio.obtenerNombreArchivo(rutaArchivo);
+            JOptionPane.showMessageDialog(null, "Reproduciendo: " + nombreArchivo, 
+                                         "Reproduciendo", JOptionPane.INFORMATION_MESSAGE);
+            
+            reproductor.start();
+                
+        } catch(Exception e){
+            JOptionPane.showMessageDialog(null, "Error al reproducir el archivo: " + e.getMessage(), 
+                                         "Error de reproducción", JOptionPane.ERROR_MESSAGE);
+            System.out.println("Error al abrir archivo: " + e.getMessage());
+        }
+        
+        return reproductor;    
+    }
+    
+
     
     public static void LlenarJlistConLista(JList elementos,LinkedList lista){
         if(lista!=null)
@@ -144,8 +256,11 @@ public class NodoLista {
             DefaultListModel modelo=new DefaultListModel();
             elementos.setModel(modelo);
             modelo.removeAllElements();
-            for(int i=0;i<lista.size();i++)
-                modelo.addElement(lista.get(i));
+            for(int i=0;i<lista.size();i++) {
+                String ruta = lista.get(i).toString();
+                String nombreArchivo = UtilidadesAudio.obtenerNombreArchivo(ruta);
+                modelo.addElement((i+1) + ". " + nombreArchivo);
+            }
         }
     }
     
@@ -155,7 +270,7 @@ public class NodoLista {
         else if (laLista.isEmpty())
             JOptionPane.showMessageDialog(null, "Flaco. La lista esta creada. pero no se le han guardado elementos");
         else 
-            JOptionPane.showMessageDialog(null, "Flaco. Esta lista tiene algo");
+            JOptionPane.showMessageDialog(null, "Flaco. Esta lista tiene " + laLista.size() + " elementos");
       
        
     }

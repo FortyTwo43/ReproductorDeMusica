@@ -28,6 +28,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     public VentanaPrincipal() {
         
         initComponents();
+        configurarLista();
     }
 
     /**
@@ -104,7 +105,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             }
         });
 
-        jButton6.setText("Modificar");
+        jButton6.setText("Estadísticas");
 
         BTNreproducir.setText("Reproducir(Imprimir)");
         BTNreproducir.addActionListener(new java.awt.event.ActionListener() {
@@ -268,6 +269,37 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         miLista=NodoLista.insercionPorPosicion(miLista);
         NodoLista.LlenarJlistConLista(jList1, miLista);
     }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+        // TODO add your handling code here:
+        if (miLista != null && !miLista.isEmpty()) {
+            // Mostrar estadísticas de la lista
+            String estadisticas = UtilidadesAudio.obtenerEstadisticasLista(miLista);
+            JOptionPane.showMessageDialog(this, estadisticas, "Estadísticas de la Lista", 
+                                         JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "La lista está vacía o no ha sido creada.", 
+                                         "Información", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }//GEN-LAST:event_jButton6ActionPerformed
+
+    /**
+     * Configura la lista para mostrar información al hacer doble clic
+     */
+    private void configurarLista() {
+        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (evt.getClickCount() == 2) {
+                    // Doble clic - mostrar información del archivo
+                    int indice = jList1.locationToIndex(evt.getPoint());
+                    if (indice >= 0 && miLista != null && indice < miLista.size()) {
+                        String rutaArchivo = miLista.get(indice).toString();
+                        UtilidadesAudio.mostrarInformacionArchivo(rutaArchivo);
+                    }
+                }
+            }
+        });
+    }
 
     /**
      * @param args the command line arguments
