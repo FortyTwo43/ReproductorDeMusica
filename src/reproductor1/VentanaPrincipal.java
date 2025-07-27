@@ -142,6 +142,11 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         jLabel3.setText("Lista simple doblemente enlazada");
 
         jButton7.setText("Atras");
+        jButton7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                retrocederCancionAnterior();
+            }
+        });
 
         jButton8.setText("Adelante");
 
@@ -349,6 +354,25 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 jList1.setSelectedIndex(indiceActual);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "No se pudo reproducir la siguiente canción.", "Error", JOptionPane.ERROR_MESSAGE);
+                System.out.println(e);
+            }
+        }
+    }
+
+    private void retrocederCancionAnterior() {
+        if (miLista != null && !miLista.isEmpty()) {
+            indiceActual = (indiceActual - 1 + miLista.size()) % miLista.size();
+            // Detener la canción actual si está sonando
+            if (reproductor != null) {
+                reproductor.stop();
+            }
+            // Reproducir la canción anterior
+            try {
+                reproductor = Manager.createPlayer(miLista.get(indiceActual));
+                reproductor.start();
+                jList1.setSelectedIndex(indiceActual);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "No se pudo reproducir la canción anterior.", "Error", JOptionPane.ERROR_MESSAGE);
                 System.out.println(e);
             }
         }
