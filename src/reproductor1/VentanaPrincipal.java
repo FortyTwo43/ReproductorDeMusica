@@ -11,7 +11,8 @@ import java.util.*;
 import javax.media.Player;
 import javax.media.Manager;
 import javax.swing.JOptionPane;
-
+import javax.sound.sampled.*;
+import java.io.File;
 
 
 /**
@@ -21,7 +22,10 @@ import javax.swing.JOptionPane;
 public class VentanaPrincipal extends javax.swing.JFrame {
   
     LinkedList<URL> miLista=null;
-    Player reproductor;
+    private Clip clip;
+    private FloatControl volumeControl;
+    private boolean isMuted = false;
+    private float lastVolume = 0.8f;
     private boolean isPaused = false;
     private int indiceActual = 0; // Índice de la canción actual
 
@@ -65,6 +69,16 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         jButton8 = new javax.swing.JButton();
         jButton9 = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
+        sliderVolumen = new javax.swing.JSlider(0, 100, 80); // 80% volumen inicial
+        sliderVolumen.setMajorTickSpacing(20);
+        sliderVolumen.setMinorTickSpacing(5);
+        sliderVolumen.setPaintTicks(true);
+        sliderVolumen.setPaintLabels(true);
+        sliderVolumen.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                sliderVolumenStateChanged(evt);
+            }
+        });
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -183,7 +197,9 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(BTNreproducir)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(BTNpausePlay))
+                        .addComponent(BTNpausePlay)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sliderVolumen, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -254,7 +270,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     .addComponent(jButton5)
                     .addComponent(jButton6)
                     .addComponent(BTNreproducir)
-                    .addComponent(BTNpausePlay))
+                    .addComponent(BTNpausePlay)
+                    .addComponent(sliderVolumen, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(45, 45, 45))
         );
 
@@ -273,9 +290,15 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_BTNcrear_listaActionPerformed
 
     private void BTNreproducirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BTNreproducirActionPerformed
-        // TODO add your handling code here:
-        
-        reproductor=NodoLista.reproducirLista(this,reproductor,miLista);
+        // Reproducir el archivo seleccionado en la lista
+        if (miLista != null && !miLista.isEmpty()) {
+            int index = jList1.getSelectedIndex();
+            if (index < 0) index = 0;
+            String ruta = miLista.get(index).getPath();
+            reproducirArchivo(ruta);
+        } else {
+            JOptionPane.showMessageDialog(this, "No hay archivos en la lista.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_BTNreproducirActionPerformed
 
     private void BTNagregar_final_listaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BTNagregar_final_listaActionPerformed
@@ -308,6 +331,44 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jButton6ActionPerformed
 
+    // Nueva función para reproducir audio usando Java Sound
+    private void reproducirArchivo(String ruta) {
+        try {
+            if (clip != null && clip.isOpen()) {
+                clip.stop();
+                clip.close();
+            }
+            File audioFile = new File(ruta);
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
+            clip = AudioSystem.getClip();
+            clip.open(audioStream);
+            // Control de volumen
+            if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                volumeControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+                setVolume(sliderVolumen.getValue() / 100.0f);
+            }
+            clip.start();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "No se pudo reproducir el archivo: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            System.out.println(e);
+        }
+    }
+
+    // Método para ajustar el volumen
+    private void setVolume(float value) {
+        if (volumeControl != null) {
+            float min = volumeControl.getMinimum();
+            float max = volumeControl.getMaximum();
+            float gain = min + (max - min) * value;
+            volumeControl.setValue(gain);
+        }
+    }
+
+    // Modifica el slider para usar setVolume
+    private void sliderVolumenStateChanged(javax.swing.event.ChangeEvent evt) {
+        setVolume(sliderVolumen.getValue() / 100.0f);
+    }
+
     /**
      * Configura la lista para mostrar información al hacer doble clic
      */
@@ -327,13 +388,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     }
 
     private void BTNpausePlayActionPerformed(java.awt.event.ActionEvent evt) {
-        if (reproductor != null) {
+        if (clip != null) { // Changed from reproductor to clip
             if (!isPaused) {
-                NodoLista.pausarReproduccion(reproductor, miLista);
+                clip.stop();
                 BTNpausePlay.setText("Reanudar");
                 isPaused = true;
             } else {
-                NodoLista.reanudarReproduccion(reproductor, miLista);
+                clip.start();
                 BTNpausePlay.setText("Pausar");
                 isPaused = false;
             }
@@ -344,13 +405,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         if (miLista != null && !miLista.isEmpty()) {
             indiceActual = (indiceActual + 1) % miLista.size();
             // Detener la canción actual si está sonando
-            if (reproductor != null) {
-                reproductor.stop();
+            if (clip != null) { // Changed from reproductor to clip
+                clip.stop();
             }
             // Reproducir la siguiente canción
             try {
-                reproductor = Manager.createPlayer(miLista.get(indiceActual));
-                reproductor.start();
+                String ruta = miLista.get(indiceActual).getPath();
+                reproducirArchivo(ruta);
                 jList1.setSelectedIndex(indiceActual);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "No se pudo reproducir la siguiente canción.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -363,13 +424,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         if (miLista != null && !miLista.isEmpty()) {
             indiceActual = (indiceActual - 1 + miLista.size()) % miLista.size();
             // Detener la canción actual si está sonando
-            if (reproductor != null) {
-                reproductor.stop();
+            if (clip != null) { // Changed from reproductor to clip
+                clip.stop();
             }
             // Reproducir la canción anterior
             try {
-                reproductor = Manager.createPlayer(miLista.get(indiceActual));
-                reproductor.start();
+                String ruta = miLista.get(indiceActual).getPath();
+                reproducirArchivo(ruta);
                 jList1.setSelectedIndex(indiceActual);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "No se pudo reproducir la canción anterior.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -435,5 +496,6 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JList jList1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JSlider sliderVolumen;
     // End of variables declaration//GEN-END:variables
 }
