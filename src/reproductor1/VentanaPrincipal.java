@@ -21,6 +21,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
   
     LinkedList<URL> miLista=null;
     Player reproductor;
+    private boolean isPaused = false;
 
     /**
      * Creates new form VentanaPrincipal
@@ -29,6 +30,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         
         initComponents();
         configurarLista();
+        isPaused = false;
     }
 
     /**
@@ -51,6 +53,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         jButton5 = new javax.swing.JButton();
         jButton6 = new javax.swing.JButton();
         BTNreproducir = new javax.swing.JButton();
+        BTNpausePlay = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jButton3 = new javax.swing.JButton();
@@ -114,6 +117,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             }
         });
 
+        BTNpausePlay.setText("Pausar");
+        BTNpausePlay.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BTNpausePlayActionPerformed(evt);
+            }
+        });
+
         jButton1.setText("Siguiente");
 
         jLabel2.setText("Lista simple circular");
@@ -159,7 +169,9 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(BTNreproducir))
+                        .addComponent(BTNreproducir)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(BTNpausePlay))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -229,7 +241,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton5)
                     .addComponent(jButton6)
-                    .addComponent(BTNreproducir))
+                    .addComponent(BTNreproducir)
+                    .addComponent(BTNpausePlay))
                 .addGap(45, 45, 45))
         );
 
@@ -301,6 +314,20 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         });
     }
 
+    private void BTNpausePlayActionPerformed(java.awt.event.ActionEvent evt) {
+        if (reproductor != null) {
+            if (!isPaused) {
+                NodoLista.pausarReproduccion(reproductor, miLista);
+                BTNpausePlay.setText("Reanudar");
+                isPaused = true;
+            } else {
+                NodoLista.reanudarReproduccion(reproductor, miLista);
+                BTNpausePlay.setText("Pausar");
+                isPaused = false;
+            }
+        }
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -341,6 +368,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JButton BTNagregar_inicio_lista;
     private javax.swing.JButton BTNcrear_lista;
     private javax.swing.JButton BTNreproducir;
+    private javax.swing.JButton BTNpausePlay;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;

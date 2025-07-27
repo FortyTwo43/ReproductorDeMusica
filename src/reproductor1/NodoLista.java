@@ -248,7 +248,26 @@ public class NodoLista {
         return reproductor;    
     }
     
+    public static void pausarReproduccion(Player reproductor, LinkedList lista) {
+        if (lista==null){
+            JOptionPane.showMessageDialog(null,"Hey...se debe crear primero la lista..");
+            return;
+        }
 
+        if (reproductor != null) {
+            reproductor.stop();
+        }
+    }
+
+    public static void reanudarReproduccion(Player reproductor, LinkedList lista) {
+        if (lista == null) {
+            JOptionPane.showMessageDialog(null, "Hey...se debe crear primero la lista..");
+            return;
+        }
+        if (reproductor != null) {
+            reproductor.start();
+        }
+    }
     
     public static void LlenarJlistConLista(JList elementos,LinkedList lista){
         if(lista!=null)
