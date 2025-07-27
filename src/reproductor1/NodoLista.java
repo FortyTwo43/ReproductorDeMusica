@@ -87,8 +87,13 @@ public class NodoLista {
                
                if (validacion.esValido) {
                    String rutaFormateada = cambiarRutaFormatoJMF(archivoSeleccionado.getAbsolutePath());
-                   lista.addFirst(rutaFormateada);
-                   UtilidadesAudio.mostrarExitoValidacion(archivoSeleccionado.getName());
+                   try {
+                       URL url = new URL(rutaFormateada);
+                       lista.addFirst(url);
+                       UtilidadesAudio.mostrarExitoValidacion(archivoSeleccionado.getName());
+                   } catch (Exception e) {
+                       JOptionPane.showMessageDialog(null, "Error al convertir la ruta a URL: " + e.getMessage());
+                   }
                } else {
                    UtilidadesAudio.mostrarErrorValidacion("Error de Validación", validacion.mensaje);
                }
@@ -116,8 +121,13 @@ public class NodoLista {
                                if (archivoSeleccionado != null && archivoSeleccionado.exists()) {
                     if (UtilidadesAudio.esFormatoSoportado(archivoSeleccionado.getName())) {
                         String rutaFormateada = cambiarRutaFormatoJMF(archivoSeleccionado.getAbsolutePath());
-                        lista.addLast(rutaFormateada);
-                        JOptionPane.showMessageDialog(null, "Elemento agregado con éxito: " + archivoSeleccionado.getName());
+                        try {
+                            URL url = new URL(rutaFormateada);
+                            lista.addLast(url);
+                            JOptionPane.showMessageDialog(null, "Elemento agregado con éxito: " + archivoSeleccionado.getName());
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(null, "Error al convertir la ruta a URL: " + e.getMessage());
+                        }
                     } else {
                         JOptionPane.showMessageDialog(null, "Formato no soportado. Use archivos MP3, WAV, AU, AIFF, M4A o OGG.", 
                                                      "Error de formato", JOptionPane.ERROR_MESSAGE);
@@ -168,8 +178,13 @@ public class NodoLista {
                                if (archivoSeleccionado != null && archivoSeleccionado.exists()) {
                     if (UtilidadesAudio.esFormatoSoportado(archivoSeleccionado.getName())) {
                         String rutaFormateada = cambiarRutaFormatoJMF(archivoSeleccionado.getAbsolutePath());
-                        lista.add(eleccion-1, rutaFormateada);
-                        JOptionPane.showMessageDialog(null, "Elemento agregado con éxito: " + archivoSeleccionado.getName());
+                        try {
+                            URL url = new URL(rutaFormateada);
+                            lista.add(eleccion-1, url);
+                            JOptionPane.showMessageDialog(null, "Elemento agregado con éxito: " + archivoSeleccionado.getName());
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(null, "Error al convertir la ruta a URL: " + e.getMessage());
+                        }
                     } else {
                         JOptionPane.showMessageDialog(null, "Formato no soportado. Use archivos MP3, WAV, AU, AIFF, M4A o OGG.", 
                                                      "Error de formato", JOptionPane.ERROR_MESSAGE);
@@ -228,17 +243,13 @@ public class NodoLista {
                 reproductor.stop();
                 reproductor.close();
             }
-            
-            String rutaArchivo = lista.get(eleccion-1).toString();
-            reproductor = Manager.createRealizedPlayer(new URL(rutaArchivo));
-            
+            URL urlArchivo = (URL) lista.get(eleccion-1);
+            reproductor = Manager.createRealizedPlayer(urlArchivo);
             // Mostrar información del archivo que se está reproduciendo
-            String nombreArchivo = UtilidadesAudio.obtenerNombreArchivo(rutaArchivo);
+            String nombreArchivo = UtilidadesAudio.obtenerNombreArchivo(new File(urlArchivo.getPath()).getName());
             JOptionPane.showMessageDialog(null, "Reproduciendo: " + nombreArchivo, 
                                          "Reproduciendo", JOptionPane.INFORMATION_MESSAGE);
-            
             reproductor.start();
-                
         } catch(Exception e){
             JOptionPane.showMessageDialog(null, "Error al reproducir el archivo: " + e.getMessage(), 
                                          "Error de reproducción", JOptionPane.ERROR_MESSAGE);
@@ -277,7 +288,7 @@ public class NodoLista {
             modelo.removeAllElements();
             for(int i=0;i<lista.size();i++) {
                 String ruta = lista.get(i).toString();
-                String nombreArchivo = UtilidadesAudio.obtenerNombreArchivo(ruta);
+                String nombreArchivo = UtilidadesAudio.obtenerNombreArchivo(new File(((URL)lista.get(i)).getPath()).getName());
                 modelo.addElement((i+1) + ". " + nombreArchivo);
             }
         }

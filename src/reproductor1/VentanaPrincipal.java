@@ -9,6 +9,7 @@ package reproductor1;
 import java.net.URL;
 import java.util.*;
 import javax.media.Player;
+import javax.media.Manager;
 import javax.swing.JOptionPane;
 
 
@@ -22,6 +23,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     LinkedList<URL> miLista=null;
     Player reproductor;
     private boolean isPaused = false;
+    private int indiceActual = 0; // Índice de la canción actual
 
     /**
      * Creates new form VentanaPrincipal
@@ -125,6 +127,11 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         });
 
         jButton1.setText("Siguiente");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                avanzarSiguienteCancion();
+            }
+        });
 
         jLabel2.setText("Lista simple circular");
 
@@ -324,6 +331,25 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 NodoLista.reanudarReproduccion(reproductor, miLista);
                 BTNpausePlay.setText("Pausar");
                 isPaused = false;
+            }
+        }
+    }
+
+    private void avanzarSiguienteCancion() {
+        if (miLista != null && !miLista.isEmpty()) {
+            indiceActual = (indiceActual + 1) % miLista.size();
+            // Detener la canción actual si está sonando
+            if (reproductor != null) {
+                reproductor.stop();
+            }
+            // Reproducir la siguiente canción
+            try {
+                reproductor = Manager.createPlayer(miLista.get(indiceActual));
+                reproductor.start();
+                jList1.setSelectedIndex(indiceActual);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "No se pudo reproducir la siguiente canción.", "Error", JOptionPane.ERROR_MESSAGE);
+                System.out.println(e);
             }
         }
     }
