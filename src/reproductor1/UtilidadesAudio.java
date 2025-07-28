@@ -85,13 +85,6 @@ public class UtilidadesAudio {
             return resultado;
         }
         
-        // Verificar firma del archivo (opcional, para mayor seguridad)
-        if (!verificarFirmaArchivo(archivo)) {
-            resultado.esValido = false;
-            resultado.mensaje = "El archivo no parece ser un archivo de audio válido. Verifique que el archivo no esté corrupto.";
-            return resultado;
-        }
-        
         // Verificar que se puede leer
         if (!archivo.canRead()) {
             resultado.esValido = false;

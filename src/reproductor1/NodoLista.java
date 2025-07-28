@@ -199,14 +199,9 @@ public class NodoLista {
            
        }
     
-    public static String cambiarRutaFormatoJMF(String ruta)
-    {
-        //FORMATO DE ENTRADA: "C:\wav\eresparami.wav"
-        //FORMATO DE SALIDA: "file:/C:/Pasionales/megustas.wav"
-        ruta=ruta.replace("\\", "/");
-        ruta="file:/"+ruta;
-        return ruta;
-        
+    public static String cambiarRutaFormatoJMF(String ruta) {
+        File archivo = new File(ruta);
+        return archivo.toURI().toString();
     }
     
     public static Player reproducirLista(JFrame ventana,Player reproductor,LinkedList lista)
