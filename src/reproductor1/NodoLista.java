@@ -51,7 +51,7 @@ public class NodoLista {
             
             @Override
             public String getDescription() {
-                return "Archivos de Audio (*.mp3, *.wav, *.au, *.aiff, *.m4a, *.ogg)";
+                return "Archivos de Audio (*.wav, *.au, *.aiff)";
             }
         };
         
@@ -129,7 +129,7 @@ public class NodoLista {
                             JOptionPane.showMessageDialog(null, "Error al convertir la ruta a URL: " + e.getMessage());
                         }
                     } else {
-                        JOptionPane.showMessageDialog(null, "Formato no soportado. Use archivos MP3, WAV, AU, AIFF, M4A o OGG.", 
+                        JOptionPane.showMessageDialog(null, "Formato no soportado. Use archivos WAV, AU, AIFF, M4A o OGG.", 
                                                      "Error de formato", JOptionPane.ERROR_MESSAGE);
                     }
                } else {
@@ -186,7 +186,7 @@ public class NodoLista {
                             JOptionPane.showMessageDialog(null, "Error al convertir la ruta a URL: " + e.getMessage());
                         }
                     } else {
-                        JOptionPane.showMessageDialog(null, "Formato no soportado. Use archivos MP3, WAV, AU, AIFF, M4A o OGG.", 
+                        JOptionPane.showMessageDialog(null, "Formato no soportado. Use archivos WAV, AU, AIFF, M4A o OGG.", 
                                                      "Error de formato", JOptionPane.ERROR_MESSAGE);
                     }
                } else {

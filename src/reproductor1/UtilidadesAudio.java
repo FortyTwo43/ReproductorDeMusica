@@ -21,8 +21,8 @@ import javax.swing.JOptionPane;
  */
 public class UtilidadesAudio {
     
-    // Formatos de audio soportados
-    public static final String[] FORMATOS_SOPORTADOS = {".mp3", ".wav", ".au", ".aiff", ".m4a", ".ogg"};
+    // Formatos de audio soportados (sin MP3)
+    public static final String[] FORMATOS_SOPORTADOS = {".wav", ".au", ".aiff", ".m4a", ".ogg"};
     
     // Tamaño mínimo para un archivo de audio válido (en bytes)
     private static final long TAMANO_MINIMO = 1024; // 1 KB
@@ -74,7 +74,7 @@ public class UtilidadesAudio {
         String nombreArchivo = archivo.getName();
         if (!esFormatoSoportado(nombreArchivo)) {
             resultado.esValido = false;
-            resultado.mensaje = "Formato no soportado. Formatos permitidos: MP3, WAV, AU, AIFF, M4A, OGG.";
+            resultado.mensaje = "Formato no soportado. Formatos permitidos: WAV, AU, AIFF, M4A, OGG.";
             return resultado;
         }
         
