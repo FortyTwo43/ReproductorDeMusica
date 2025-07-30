@@ -15,10 +15,10 @@ import javax.sound.sampled.*;
 import java.io.File;
 
 
-/**
- *
+/*
  * @author Robert Moreira
  */
+
 public class VentanaPrincipal extends javax.swing.JFrame {
   
     LinkedList<URL> miLista=null;
@@ -27,8 +27,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private boolean isMuted = false;
     private float lastVolume = 0.8f;
     private boolean isPaused = false;
-    private int indiceActual = 0; // Índice de la canción actual
-
+    private int indiceActual = 0;
 
     /**
      * Creates new form VentanaPrincipal
@@ -201,17 +200,6 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         NodoLista.LlenarJlistConLista(jList1, miLista);
     }//GEN-LAST:event_BTNagregar_final_listaActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
-        NodoLista.MirarSiListaVacia(miLista);
-    }//GEN-LAST:event_jButton2ActionPerformed
-
-    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        // TODO add your handling code here:
-        miLista=NodoLista.insercionPorPosicion(miLista);
-        NodoLista.LlenarJlistConLista(jList1, miLista);
-    }//GEN-LAST:event_jButton5ActionPerformed
-
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
         // TODO add your handling code here:
         if (miLista != null && !miLista.isEmpty()) {
@@ -263,9 +251,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         setVolume(sliderVolumen.getValue() / 100.0f);
     }
 
-    /**
-     * Configura la lista para mostrar información al hacer doble clic
-     */
+    /*** Configura la lista para mostrar información al hacer doble clic*/
     private void configurarLista() {
         jList1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -381,5 +367,4 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    // End of variables declaration//GEN-END:variables
 }

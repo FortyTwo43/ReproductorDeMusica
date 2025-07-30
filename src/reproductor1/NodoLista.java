@@ -138,65 +138,7 @@ public class NodoLista {
                }
            }
            
-           return lista;
-           
-       }
-    
-    public static LinkedList insercionPorPosicion(LinkedList lista)//OK
-       {
-           if (lista==null)
-           {
-               JOptionPane.showMessageDialog(null,"Hey...se debe crear primero la lista..");
-               return lista;
-           }
-           
-           Integer eleccion;
-           try {
-               eleccion = Integer.parseInt(JOptionPane.showInputDialog
-                        ("Número de elementos en la lista: "+lista.size()+"\n"+
-                                    "¿En que posición desea introducir?"));
-           } catch (NumberFormatException e) {
-               JOptionPane.showMessageDialog(null, "Por favor ingrese un número válido.", 
-                                            "Error", JOptionPane.ERROR_MESSAGE);
-               return lista;
-           }
-           
-           if (eleccion < 1 || eleccion > lista.size() + 1) {
-               JOptionPane.showMessageDialog(null, "Posición inválida. Debe estar entre 1 y " + (lista.size() + 1), 
-                                            "Error", JOptionPane.ERROR_MESSAGE);
-               return lista;
-           }
-
-           
-           // muestra el cuadro de diálogo de archivos, para que el usuario pueda elegir el archivo a abrir
-           JFileChooser selectorArchivos = configurarSelectorArchivos();
-           int resultado = selectorArchivos.showOpenDialog(null);
-           
-           if (resultado == JFileChooser.APPROVE_OPTION) {
-               File archivoSeleccionado = selectorArchivos.getSelectedFile();
-               
-                               if (archivoSeleccionado != null && archivoSeleccionado.exists()) {
-                    if (UtilidadesAudio.esFormatoSoportado(archivoSeleccionado.getName())) {
-                        String rutaFormateada = cambiarRutaFormatoJMF(archivoSeleccionado.getAbsolutePath());
-                        try {
-                            URL url = new URL(rutaFormateada);
-                            lista.add(eleccion-1, url);
-                            JOptionPane.showMessageDialog(null, "Elemento agregado con éxito: " + archivoSeleccionado.getName());
-                        } catch (Exception e) {
-                            JOptionPane.showMessageDialog(null, "Error al convertir la ruta a URL: " + e.getMessage());
-                        }
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Formato no soportado. Use archivos WAV, AU, AIFF, M4A o OGG.", 
-                                                     "Error de formato", JOptionPane.ERROR_MESSAGE);
-                    }
-               } else {
-                   JOptionPane.showMessageDialog(null, "No se seleccionó ningún archivo válido.", 
-                                                "Error", JOptionPane.ERROR_MESSAGE);
-               }
-           }
-           
-           return lista;
-           
+           return lista;  
        }
     
     public static String cambiarRutaFormatoJMF(String ruta) {
@@ -288,16 +230,4 @@ public class NodoLista {
             }
         }
     }
-    
-     public static void MirarSiListaVacia(LinkedList laLista){//Los libros lo llaman "cima"
-        if (laLista==null)
-            JOptionPane.showMessageDialog(null, "Flaco. La lista no estaba creada");
-        else if (laLista.isEmpty())
-            JOptionPane.showMessageDialog(null, "Flaco. La lista esta creada. pero no se le han guardado elementos");
-        else 
-            JOptionPane.showMessageDialog(null, "Flaco. Esta lista tiene " + laLista.size() + " elementos");
-      
-       
-    }
-    
 }
