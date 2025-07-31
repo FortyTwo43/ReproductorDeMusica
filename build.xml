@@ -3,7 +3,7 @@
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
   <jar>C:\Desktop\ReproductorDeMusica\ReproductorMusica.jar</jar>
-  <outfile>C:\Desktop\ReproductorDeMusica\ReproductorMusica.exe</outfile>
+  <outfile>C:\Desktop\ReproductorDeMusica\ReproductorDeMusica.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir></chdir>
@@ -18,7 +18,7 @@
     <path>%JAVA_HOME%;%PATH%</path>
     <requiresJdk>false</requiresJdk>
     <requires64Bit>false</requires64Bit>
-    <minVersion>1.8.0</minVersion>
+    <minVersion></minVersion>
     <maxVersion></maxVersion>
   </jre>
 </launch4jConfig>
