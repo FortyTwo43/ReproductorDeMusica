@@ -6,7 +6,7 @@
   <outfile>C:\Desktop\ReproductorDeMusica\ReproductorDeMusica.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
-  <chdir></chdir>
+  <chdir>.</chdir>
   <priority>normal</priority>
   <downloadUrl></downloadUrl>
   <supportUrl></supportUrl>
@@ -18,7 +18,7 @@
     <path>%JAVA_HOME%;%PATH%</path>
     <requiresJdk>false</requiresJdk>
     <requires64Bit>false</requires64Bit>
-    <minVersion></minVersion>
+    <minVersion>1.8</minVersion>
     <maxVersion></maxVersion>
   </jre>
 </launch4jConfig>
