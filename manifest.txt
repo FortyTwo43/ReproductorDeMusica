@@ -1,0 +1,2 @@
+Main-Class: reproductor1.VentanaPrincipal
+Class-Path: lib/vlcj-4.7.1.jar lib/AbsoluteLayout.jar lib/mp3spi1.9.5.jar lib/jl1.0.1.jar lib/tritonus_share-0.3.7.jar lib/tritonus_mp3.jar lib/tritonus_remaining.jar JMF-2.1.1e/lib/jmf.jar

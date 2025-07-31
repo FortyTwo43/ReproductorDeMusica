@@ -11,19 +11,23 @@ import java.util.*;
 import javax.media.Player;
 import javax.media.Manager;
 import javax.swing.JOptionPane;
+import javax.sound.sampled.*;
+import java.io.File;
 
 
-
-/**
- *
+/*
  * @author Robert Moreira
  */
+
 public class VentanaPrincipal extends javax.swing.JFrame {
   
     LinkedList<URL> miLista=null;
-    Player reproductor;
+    private Clip clip;
+    private FloatControl volumeControl;
+    private boolean isMuted = false;
+    private float lastVolume = 0.8f;
     private boolean isPaused = false;
-    private int indiceActual = 0; // Índice de la canción actual
+    private int indiceActual = 0;
 
     /**
      * Creates new form VentanaPrincipal
@@ -33,6 +37,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         initComponents();
         configurarLista();
         isPaused = false;
+        // Fijar tamaño y deshabilitar redimensionamiento
+        setResizable(false);
+        setSize(500, 400);
+        setMinimumSize(new java.awt.Dimension(500, 400));
+        setMaximumSize(new java.awt.Dimension(500, 400));
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Reproductor de música");
     }
 
     /**
@@ -49,31 +60,41 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         jList1 = new javax.swing.JList();
         jLabel1 = new javax.swing.JLabel();
         BTNcrear_lista = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
         BTNagregar_inicio_lista = new javax.swing.JButton();
         BTNagregar_final_lista = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
-        jButton6 = new javax.swing.JButton();
         BTNreproducir = new javax.swing.JButton();
         BTNpausePlay = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
-        jButton7 = new javax.swing.JButton();
-        jButton8 = new javax.swing.JButton();
-        jButton9 = new javax.swing.JButton();
-        jLabel4 = new javax.swing.JLabel();
+        jButtonSiguiente = new javax.swing.JButton(); // Inicialización antes de uso
+        jButtonAnterior = new javax.swing.JButton(); // Inicialización antes de uso
+        sliderVolumen = new javax.swing.JSlider(0, 100, 80);
+        sliderVolumen.setMajorTickSpacing(20);
+        sliderVolumen.setMinorTickSpacing(5);
+        sliderVolumen.setPaintTicks(true);
+        sliderVolumen.setPaintLabels(true);
+        sliderVolumen.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                sliderVolumenStateChanged(evt);
+            }
+        });
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
+        setTitle("Reproductor de música");
 
-        jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        jPanel1.setLayout(new java.awt.BorderLayout());
+
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 20));
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("Reproductor de música");
 
         jScrollPane1.setViewportView(jList1);
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
-        jLabel1.setText("Reproductor de música \"Estructuras de Datos\"");
+        // Panel de botones de lista
+        javax.swing.JPanel panelBotonesLista = new javax.swing.JPanel();
+        panelBotonesLista.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 15, 5));
+        panelBotonesLista.add(BTNcrear_lista);
+        panelBotonesLista.add(BTNagregar_inicio_lista);
+        panelBotonesLista.add(BTNagregar_final_lista);
 
         BTNcrear_lista.setText("Crear lista");
         BTNcrear_lista.addActionListener(new java.awt.event.ActionListener() {
@@ -81,21 +102,12 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 BTNcrear_listaActionPerformed(evt);
             }
         });
-
-        jButton2.setText("¿Lista vacia?");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-
         BTNagregar_inicio_lista.setText("Agregar al inicio");
         BTNagregar_inicio_lista.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BTNagregar_inicio_listaActionPerformed(evt);
             }
         });
-
         BTNagregar_final_lista.setText("Agregar al final");
         BTNagregar_final_lista.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -103,162 +115,60 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             }
         });
 
-        jButton5.setText("Agregar por posición");
-        jButton5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton5ActionPerformed(evt);
-            }
-        });
-
-        jButton6.setText("Estadísticas");
-
-        BTNreproducir.setText("Reproducir(Imprimir)");
+        // Panel de control de reproducción
+        javax.swing.JPanel panelControles = new javax.swing.JPanel();
+        panelControles.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 15, 5));
+        BTNreproducir.setText("Reproducir");
         BTNreproducir.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BTNreproducirActionPerformed(evt);
             }
         });
-
-        BTNpausePlay.setText("Pausar");
+        BTNpausePlay.setText("Pausar/Reanudar");
         BTNpausePlay.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BTNpausePlayActionPerformed(evt);
             }
         });
-
-        jButton1.setText("Siguiente");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                avanzarSiguienteCancion();
-            }
-        });
-
-        jLabel2.setText("Lista simple circular");
-
-        jButton3.setText("Atras");
-
-        jButton4.setText("Adelante");
-
-        jLabel3.setText("Lista simple doblemente enlazada");
-
-        jButton7.setText("Atras");
-        jButton7.addActionListener(new java.awt.event.ActionListener() {
+        jButtonAnterior.setText("Anterior");
+        jButtonAnterior.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 retrocederCancionAnterior();
             }
         });
+        jButtonSiguiente.setText("Siguiente");
+        jButtonSiguiente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                avanzarSiguienteCancion();
+            }
+        });
+        panelControles.add(BTNreproducir);
+        panelControles.add(BTNpausePlay);
+        panelControles.add(jButtonAnterior);
+        panelControles.add(jButtonSiguiente);
+        panelControles.add(sliderVolumen);
 
-        jButton8.setText("Adelante");
-
-        jButton9.setText("Siguiente");
-
-        jLabel4.setText("Lista simple doblemente circular");
-
+        // Layout principal
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(441, 441, 441)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(197, 197, 197)
-                        .addComponent(jLabel1))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(BTNcrear_lista, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(BTNagregar_inicio_lista, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(BTNagregar_final_lista, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(BTNreproducir)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(BTNpausePlay))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(38, 38, 38)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jButton7)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jButton8, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton1)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel4))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jButton9)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jButton3)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel3))))))
-                .addContainerGap(60, Short.MAX_VALUE))
+            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+            .addComponent(panelBotonesLista, javax.swing.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+            .addComponent(panelControles, javax.swing.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(36, 36, 36)
-                                .addComponent(jButton9))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addComponent(jLabel2)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jButton3)
-                                    .addComponent(jButton4))
-                                .addGap(36, 36, 36)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jButton7)
-                                    .addComponent(jButton8)
-                                    .addComponent(jButton1)
-                                    .addComponent(jLabel4)))
-                            .addComponent(jLabel3))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addGap(30, 30, 30)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(24, 24, 24)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(BTNcrear_lista)
-                    .addComponent(jButton2)
-                    .addComponent(BTNagregar_inicio_lista)
-                    .addComponent(BTNagregar_final_lista))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton5)
-                    .addComponent(jButton6)
-                    .addComponent(BTNreproducir)
-                    .addComponent(BTNpausePlay))
-                .addGap(45, 45, 45))
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(panelBotonesLista, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(panelControles, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 70, Short.MAX_VALUE))
         );
-
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void BTNagregar_inicio_listaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BTNagregar_inicio_listaActionPerformed
@@ -273,9 +183,15 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_BTNcrear_listaActionPerformed
 
     private void BTNreproducirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BTNreproducirActionPerformed
-        // TODO add your handling code here:
-        
-        reproductor=NodoLista.reproducirLista(this,reproductor,miLista);
+        // Reproducir el archivo seleccionado en la lista
+        if (miLista != null && !miLista.isEmpty()) {
+            int index = jList1.getSelectedIndex();
+            if (index < 0) index = 0;
+            String ruta = miLista.get(index).getPath();
+            reproducirArchivo(ruta);
+        } else {
+            JOptionPane.showMessageDialog(this, "No hay archivos en la lista.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_BTNreproducirActionPerformed
 
     private void BTNagregar_final_listaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BTNagregar_final_listaActionPerformed
@@ -283,17 +199,6 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         miLista=NodoLista.insercionCima(miLista);
         NodoLista.LlenarJlistConLista(jList1, miLista);
     }//GEN-LAST:event_BTNagregar_final_listaActionPerformed
-
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
-        NodoLista.MirarSiListaVacia(miLista);
-    }//GEN-LAST:event_jButton2ActionPerformed
-
-    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        // TODO add your handling code here:
-        miLista=NodoLista.insercionPorPosicion(miLista);
-        NodoLista.LlenarJlistConLista(jList1, miLista);
-    }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
         // TODO add your handling code here:
@@ -308,9 +213,45 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jButton6ActionPerformed
 
-    /**
-     * Configura la lista para mostrar información al hacer doble clic
-     */
+    // Nueva función para reproducir audio usando Java Sound
+    private void reproducirArchivo(String ruta) {
+        try {
+            if (clip != null && clip.isOpen()) {
+                clip.stop();
+                clip.close();
+            }
+            File audioFile = new File(ruta);
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
+            clip = AudioSystem.getClip();
+            clip.open(audioStream);
+            // Control de volumen
+            if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                volumeControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+                setVolume(sliderVolumen.getValue() / 100.0f);
+            }
+            clip.start();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "No se pudo reproducir el archivo: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            System.out.println(e);
+        }
+    }
+
+    // Método para ajustar el volumen
+    private void setVolume(float value) {
+        if (volumeControl != null) {
+            float min = volumeControl.getMinimum();
+            float max = volumeControl.getMaximum();
+            float gain = min + (max - min) * value;
+            volumeControl.setValue(gain);
+        }
+    }
+
+    // Modifica el slider para usar setVolume
+    private void sliderVolumenStateChanged(javax.swing.event.ChangeEvent evt) {
+        setVolume(sliderVolumen.getValue() / 100.0f);
+    }
+
+    /*** Configura la lista para mostrar información al hacer doble clic*/
     private void configurarLista() {
         jList1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -327,13 +268,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     }
 
     private void BTNpausePlayActionPerformed(java.awt.event.ActionEvent evt) {
-        if (reproductor != null) {
+        if (clip != null) { // Changed from reproductor to clip
             if (!isPaused) {
-                NodoLista.pausarReproduccion(reproductor, miLista);
+                clip.stop();
                 BTNpausePlay.setText("Reanudar");
                 isPaused = true;
             } else {
-                NodoLista.reanudarReproduccion(reproductor, miLista);
+                clip.start();
                 BTNpausePlay.setText("Pausar");
                 isPaused = false;
             }
@@ -344,13 +285,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         if (miLista != null && !miLista.isEmpty()) {
             indiceActual = (indiceActual + 1) % miLista.size();
             // Detener la canción actual si está sonando
-            if (reproductor != null) {
-                reproductor.stop();
+            if (clip != null) { // Changed from reproductor to clip
+                clip.stop();
             }
             // Reproducir la siguiente canción
             try {
-                reproductor = Manager.createPlayer(miLista.get(indiceActual));
-                reproductor.start();
+                String ruta = miLista.get(indiceActual).getPath();
+                reproducirArchivo(ruta);
                 jList1.setSelectedIndex(indiceActual);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "No se pudo reproducir la siguiente canción.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -363,13 +304,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         if (miLista != null && !miLista.isEmpty()) {
             indiceActual = (indiceActual - 1 + miLista.size()) % miLista.size();
             // Detener la canción actual si está sonando
-            if (reproductor != null) {
-                reproductor.stop();
+            if (clip != null) { // Changed from reproductor to clip
+                clip.stop();
             }
             // Reproducir la canción anterior
             try {
-                reproductor = Manager.createPlayer(miLista.get(indiceActual));
-                reproductor.start();
+                String ruta = miLista.get(indiceActual).getPath();
+                reproducirArchivo(ruta);
                 jList1.setSelectedIndex(indiceActual);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "No se pudo reproducir la canción anterior.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -419,21 +360,11 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JButton BTNcrear_lista;
     private javax.swing.JButton BTNreproducir;
     private javax.swing.JButton BTNpausePlay;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
-    private javax.swing.JButton jButton7;
-    private javax.swing.JButton jButton8;
-    private javax.swing.JButton jButton9;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
+    private javax.swing.JButton jButtonSiguiente;
+    private javax.swing.JButton jButtonAnterior;
+    private javax.swing.JSlider sliderVolumen;
     private javax.swing.JList jList1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    // End of variables declaration//GEN-END:variables
 }
